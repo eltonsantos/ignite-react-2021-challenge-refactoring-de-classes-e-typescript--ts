@@ -30,7 +30,7 @@ export function Dashboard() {
   }, []);
 
   const handleAddFood = async (
-    food: Omit<IFoodPlate, "id" | "avaliable">
+    food: Omit<IFoodPlate, "id" | "available">
   ): Promise<void> => {
     try {
       const response = await api.post("/foods", {
@@ -45,7 +45,7 @@ export function Dashboard() {
   };
 
   const handleUpdateFood = async (
-    food: Omit<IFoodPlate, "id" | "avaliable">
+    food: Omit<IFoodPlate, "id" | "available">
   ): Promise<void> => {
     try {
       const foodUpdated = await api.put(`/foods/${editingFood.id}`, {
