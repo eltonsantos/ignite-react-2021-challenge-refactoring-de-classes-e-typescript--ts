@@ -1,91 +1,87 @@
-import { Component } from 'react';
+import { useEffect, useState } from "react";
+import { Food } from "../../components/Food";
+import { Header } from "../../components/Header";
+import { ModalAddFood } from "../../components/ModalAddFood";
+import { ModalEditFood } from "../../components/ModalEditFood";
+import api from "../../services/api";
+import { FoodsContainer } from "./styles";
 
-import Header from '../../components/Header';
-import api from '../../services/api';
-import Food from '../../components/Food';
-import ModalAddFood from '../../components/ModalAddFood';
-import ModalEditFood from '../../components/ModalEditFood';
-import { FoodsContainer } from './styles';
+interface IFoodPlate {
+  id: number;
+  name: string;
+  image: string;
+  price: string;
+  description: string;
+  available: boolean;
+}
 
 export function Dashboard() {
-  constructor(props) {
-    super(props);
-    this.state = {
-      foods: [],
-      editingFood: {},
-      modalOpen: false,
-      editModalOpen: false,
+  const [foods, setFoods] = useState<IFoodPlate[]>([]);
+  const [editingFood, setEditingFood] = useState<IFoodPlate>({} as IFoodPlate);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadFood() {
+      const response = await api.get("/foods");
+      setFoods(response.data);
     }
-  }
+    loadFood();
+  }, []);
 
-  async componentDidMount() {
-    const response = await api.get('/foods');
-
-    this.setState({ foods: response.data });
-  }
-
-  handleAddFood = async food => {
-    const { foods } = this.state;
-
+  const handleAddFood = async (
+    food: Omit<IFoodPlate, "id" | "avaliable">
+  ): Promise<void> => {
     try {
-      const response = await api.post('/foods', {
+      const response = await api.post("/foods", {
         ...food,
         available: true,
       });
 
-      this.setState({ foods: [...foods, response.data] });
+      setFoods([...foods, response.data]);
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
-  handleUpdateFood = async food => {
-    const { foods, editingFood } = this.state;
-
+  const handleUpdateFood = async (
+    food: Omit<IFoodPlate, "id" | "avaliable">
+  ): Promise<void> => {
     try {
-      const foodUpdated = await api.put(
-        `/foods/${editingFood.id}`,
-        { ...editingFood, ...food },
-      );
+      const foodUpdated = await api.put(`/foods/${editingFood.id}`, {
+        ...editingFood,
+        ...food,
+      });
 
-      const foodsUpdated = foods.map(f =>
-        f.id !== foodUpdated.data.id ? f : foodUpdated.data,
+      setFoods(
+        foods.map((f) => (f.id !== foodUpdated.data.id ? f : foodUpdated.data))
       );
-
-      this.setState({ foods: foodsUpdated });
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
-  handleDeleteFood = async id => {
-    const { foods } = this.state;
+  const handleDeleteFood = async (id: number): Promise<void> => {
+    try {
+      await api.delete(`/foods/${id}`);
+      setFoods(foods.filter((food) => food.id !== id));
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    await api.delete(`/foods/${id}`);
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+  };
 
-    const foodsFiltered = foods.filter(food => food.id !== id);
+  const toggleEditModal = (): void => {
+    setEditModalOpen(!editModalOpen);
+  };
 
-    this.setState({ foods: foodsFiltered });
-  }
-
-  toggleModal = () => {
-    const { modalOpen } = this.state;
-
-    this.setState({ modalOpen: !modalOpen });
-  }
-
-  toggleEditModal = () => {
-    const { editModalOpen } = this.state;
-
-    this.setState({ editModalOpen: !editModalOpen });
-  }
-
-  handleEditFood = food => {
-    this.setState({ editingFood: food, editModalOpen: true });
-  }
-
-
-  const { modalOpen, editModalOpen, editingFood, foods } = this.state;
+  const handleEditFood = (food: IFoodPlate): void => {
+    setEditingFood(food);
+    toggleEditModal();
+  };
 
   return (
     <>
@@ -104,7 +100,7 @@ export function Dashboard() {
 
       <FoodsContainer data-testid="foods-list">
         {foods &&
-          foods.map(food => (
+          foods.map((food) => (
             <Food
               key={food.id}
               food={food}
@@ -115,4 +111,4 @@ export function Dashboard() {
       </FoodsContainer>
     </>
   );
-};
+}

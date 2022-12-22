@@ -1,16 +1,24 @@
 import {
+  InputHTMLAttributes,
+  useCallback,
   useEffect,
   useRef,
   useState,
-  useCallback,
-} from 'react';
+} from "react";
 
-import { useField } from '@unform/core';
+import { useField } from "@unform/core";
 
-import { Container } from './styles';
+import { IconBaseProps } from "react-icons";
 
-export const Input = ({ name, icon: Icon, ...rest }) => {
-  const inputRef = useRef(null);
+import { Container } from "./styles";
+
+interface IInputProps extends InputHTMLAttributes<HTMLInputElement> {
+  name: string;
+  icon?: React.ComponentType<IconBaseProps>;
+}
+
+export const Input = ({ name, icon: Icon, ...rest }: IInputProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
@@ -31,7 +39,7 @@ export const Input = ({ name, icon: Icon, ...rest }) => {
     registerField({
       name: fieldName,
       ref: inputRef.current,
-      path: 'value',
+      path: "value",
     });
   }, [fieldName, registerField]);
 

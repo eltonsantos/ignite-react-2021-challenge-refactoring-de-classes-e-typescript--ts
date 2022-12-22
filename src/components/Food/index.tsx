@@ -1,39 +1,43 @@
-import { FiEdit3, FiTrash } from 'react-icons/fi';
+import { useState } from "react";
+import { FiEdit3, FiTrash } from "react-icons/fi";
 
-import { Container } from './styles';
-import api from '../../services/api';
+import api from "../../services/api";
+import { Container } from "./styles";
 
-export function Food() {
+interface IFoodPlate {
+  id: number;
+  name: string;
+  image: string;
+  price: string;
+  description: string;
+  available: boolean;
+}
 
-  const { isAvailable } = this.state;
-  const { food, handleDelete } = this.props;
+interface IProps {
+  food: IFoodPlate;
+  handleDelete: (id: number) => {};
+  handleEditFood: (food: IFoodPlate) => void;
+}
 
-  constructor(props) {
-    super(props);
+export function Food({ food, handleDelete, handleEditFood }: IProps) {
+  const [isAvailable, setIsAvailable] = useState(food.available);
 
-    const { available } = this.props.food;
-    this.state = {
-      isAvailable: available
-    };
-  }
+  const toggleAvailable = async () => {
+    try {
+      await api.put(`/foods/${food.id}`, {
+        ...food,
+        available: !isAvailable,
+      });
 
-  toggleAvailable = async () => {
-    const { food } = this.props;
-    const { isAvailable } = this.state;
+      setIsAvailable(!isAvailable);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    await api.put(`/foods/${food.id}`, {
-      ...food,
-      available: !isAvailable,
-    });
-
-    this.setState({ isAvailable: !isAvailable });
-  }
-
-  setEditingFood = () => {
-    const { food, handleEditFood } = this.props;
-
+  const setEditingFood = (): void => {
     handleEditFood(food);
-  }
+  };
 
   return (
     <Container available={isAvailable}>
@@ -69,7 +73,7 @@ export function Food() {
         </div>
 
         <div className="availability-container">
-          <p>{isAvailable ? 'Disponível' : 'Indisponível'}</p>
+          <p>{isAvailable ? "Disponível" : "Indisponível"}</p>
 
           <label htmlFor={`available-switch-${food.id}`} className="switch">
             <input
@@ -84,5 +88,5 @@ export function Food() {
         </div>
       </section>
     </Container>
-  ); 
-};
+  );
+}
